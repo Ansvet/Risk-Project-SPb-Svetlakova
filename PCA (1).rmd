@@ -1,0 +1,100 @@
+---
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r warning = FALSE}
+
+ #excel with Maturity from 31.1.2018 till 01.02.2016
+
+library(readxl)
+yields  <- read_excel("C:/Users/User/Desktop/data.xlsx")
+
+```
+
+
+```{r warning = FALSE}
+matplot(yields, type='l', ylim = c(0,12),ylab = 'rate', xlab = 'Time') #yield curve
+
+```
+
+
+
+```{r warning = FALSE}
+returns = data.frame(diff(as.matrix(yields)))*(-1) #daily zero-coupons increments
+head(returns)
+
+```
+
+Сorrelation
+
+```{r warning = FALSE}
+options(digits = 2)
+cor(returns) 
+
+```
+
+Сovariance
+
+```{r warning = FALSE}
+options(digits = 2)
+cov(returns)
+
+```
+
+
+
+```{r warning = FALSE}
+#necessary to standardize the variables because PCA is sensitive to the scale of the data
+model = prcomp(returns, scale = TRUE, center = TRUE) 
+```
+
+Data frame which provides the data for the principal components analysis
+
+```{r warning = FALSE}
+x = data.frame(model$x)
+head(x)
+tail(x)
+```
+
+
+The matrix of variable loadings (i.e., a matrix whose columns contain the eigenvectors)
+
+```{r warning = FALSE}
+
+loadings = data.frame(model$rotation) 
+head(loadings)
+tail(loadings)
+```
+
+
+Standard deviation - this is simply the eigenvalues in our case since the data has been centered and scaled (standardized)
+
+Proportion of Variance - the amount of variance the component accounts for in the data
+
+Cumulative Proportion - the accumulated amount of explained variance
+
+Three principal components can explain almost 97% percent of the variance. Eigenvalues of first two components are larger than 1. Eigenvalue of the third component is almost 1. 
+
+```{r}
+summary(model)
+```
+
+
+```{r warning = FALSE}
+par(mfrow = c(1,2))
+barplot(model$sdev^2, main = 'Eigenvalues of each component')
+barplot(cumsum(model$sdev^2)/sum(model$sdev^2), main = 'Cumulative Explained Variance', ylab = 'Variance Explained')
+```
+
+```{r warning = FALSE}
+plot(loadings$PC1, type = "line") #convexity
+plot(loadings$PC2, type = "line") #slope change
+plot(loadings$PC3, type = "line") #level change
+
+```
+
+
+
+
